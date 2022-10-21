@@ -18,42 +18,38 @@ namespace TurneroAPI.Controllers
     public class LoginAPIController : ControllerBase
     {
         private readonly IConfiguration _config;
+        private readonly SignInManager<IdentityUser> _signInManager;
 
         public LoginAPIController(
-        IConfiguration config)
+        IConfiguration config, SignInManager<IdentityUser> signInManager)
         {
             _config = config;
+            _signInManager = signInManager;
         }
 
 
         [HttpPost]
         [Route("login")]
-        public async Task<IActionResult> Login(string username, string password)
+        public async Task<IActionResult> LoginAsync(string username, string password)
         {
-            string apiUrl = _config.GetValue<string>("base")+"/api/Login";
-            WebClient client = new();
-
-
+            string token = string.Empty;
             if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
                 return BadRequest("Username or Password null");
             }
 
-            var user = JsonConvert.DeserializeObject<IdentityUser>(client.UploadString(apiUrl + "/Find?username="+ username, string.Empty));
-            if (user == null)
+            var user = await _signInManager.PasswordSignInAsync(username, password, false, lockoutOnFailure: false);
+            if (!user.Succeeded)
             {
                 return BadRequest("Invalid Login and/or password");
             }
-
-
-            //var passwordSignInResult = await LoginController.Access(username, password, isPersistent: true, lockoutOnFailure: false);
-            //if (!passwordSignInResult.Succeeded)
-            //{
-            //    return BadRequest("Invalid Login and/or password");
-            //}
-            //var token = GenerateToken(user);
-            return Ok(user);
-            //return Ok("Cookie created");
+            else
+            {
+                var userLogged = await _signInManager.UserManager.FindByNameAsync(username);
+                token = GenerateToken(userLogged);
+            }
+            var response = "token: " + token;
+            return Ok(response);
         }
 
         private string GenerateToken(IdentityUser user)

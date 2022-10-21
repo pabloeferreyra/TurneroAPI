@@ -1,17 +1,30 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Turnero.Data;
+using Turnero.Services;
 using Turnero.Services.Interfaces;
 using Turnero.Services.Repositories;
-using Turnero.Services;
-using Turnero.Data;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = false;
+    // Password settings.
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequiredLength = 6;
+    options.Password.RequiredUniqueChars = 0;
+}).AddRoles<IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>();
 
 #region services
 builder.Services.AddScoped<IInsertTurnsServices, InsertTurnsServices>();
@@ -43,7 +56,8 @@ builder.Services.AddScoped<IExportRepository, ExportRepository>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 //JWT Authentication
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => {
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+{
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,

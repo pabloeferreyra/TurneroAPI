@@ -9,12 +9,12 @@ namespace TurneroAPI.DTO
     public class MedicDTO
     {
         public Guid Id { get; set; }
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         public MedicDTO(Medic medic)
         {
             Id = medic.Id;
-            Name = medic.Name;
+            Name = medic?.Name;
         }
     }
 }

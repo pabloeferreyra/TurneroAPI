@@ -1,9 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using OfficeOpenXml;
-using System;
+﻿using OfficeOpenXml;
 using System.Drawing;
-using System.IO;
-using System.Threading.Tasks;
 using Turnero.Data;
 
 namespace Turnero.Services.Repositories
@@ -50,7 +46,7 @@ namespace Turnero.Services.Repositories
                 foreach (var turn in turns)
                 {
                     worksheet.Cells[row, 1].Value = turn.Name;
-                    worksheet.Cells[row, 2].Value = turn.Time.Time;
+                    worksheet.Cells[row, 2].Value = turn.Time?.Time;
                     worksheet.Cells[row, 3].Value = turn.SocialWork;
                     worksheet.Cells[row, 4].Value = turn.Reason;
 
